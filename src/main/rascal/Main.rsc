@@ -23,7 +23,7 @@ list[Declaration] getASTs(loc projectLocation) {
     return asts;
 }
 
-int getNumberOfInterfaces(list[Declaration] asts){
+int getVolume(list[Declaration] asts){
     int interfaces = 0;
     visit(asts){
         case \interface(_, _, _, _): interfaces += 1;
