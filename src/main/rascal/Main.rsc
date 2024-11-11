@@ -13,7 +13,9 @@ int main(int testArgument=0) {
     loc projectLocation = |cwd://testProject0|;
     list[Declaration]  asts = getASTs(projectLocation);
 
-    println("Complexity: <getComplexity(asts)>");
+    println(asts);
+
+    // println("Complexity: <getComplexity(asts)>");
 
     return testArgument;
 }
@@ -27,7 +29,7 @@ list[Declaration] getASTs(loc projectLocation) {
 
 // Cyclomatic complexity 
 // formula: C = D + 1, where D is the decision points like if, case, while
-int getComplexity(list[Declaration] asts){
+int getComplexity(list[Declaration] asts) {
     // Decision points 
     int dp = 0;
     visit(asts){
@@ -55,5 +57,12 @@ int getComplexity(list[Declaration] asts){
     // Apply Cyclomatic complexity formula 
     return dp + 1;
 }
+
+// int getDuplicatePercentage(list[Declaration] asts) {
+//     int duplicates = 0;
+//     visit(ast) {
+
+//     }
+// }
 
 

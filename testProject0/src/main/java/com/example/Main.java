@@ -17,5 +17,29 @@ public class Main {
         while (count < x) {
             count += 1;
         }
+
+        if (x == 10){
+            System.out.println("DP 1");
+        } else if (x < 0){
+            System.out.println("DP 2");
+        } else {
+            System.out.println("Still DP 1");
+        } 
+
+        while (count < x) {
+            count += 1;
+        }
+
+        if (x == 10){
+            System.out.println("DP 1");
+        } else if (x < 0){
+            System.out.println("DP 2");
+        } else {
+            System.out.println("Still DP 1");
+        } 
+
+        while (count < x) {
+            count += 1;
+        }
     }
 }
