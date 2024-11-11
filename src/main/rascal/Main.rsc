@@ -11,7 +11,8 @@ import Map;
 int main(int testArgument=0) {
     println("argument: <testArgument>");
     loc projectLocation = |cwd:///testProject0/|;
-    println(getASTs(projectLocation));
+    //println(getASTs(projectLocation));
+    getLOC(getASTs(projectLocation));
     return testArgument;
 }
 
@@ -31,7 +32,18 @@ int getNumberOfInterfaces(list[Declaration] asts){
     return interfaces;
 }
 
-// int getLOC(list [Declaration] asts) {
-//     int loc = 0;
-    
-// }
+void getLOC(list[Declaration] asts) {
+    set[int] unique_lines = {};
+    visit(asts) {
+        case Declaration x: {
+            loc location = x.src;
+            unique_lines += location.begin.line;
+            println(location.begin.line);
+        }
+    }
+    println("hi");
+    println(unique_lines);
+    return; //size(lines);
+}
+
+//unique_lines += x.src.begin.line;
