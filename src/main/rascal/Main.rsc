@@ -10,13 +10,24 @@ import String;
 int main(int testArgument=0) {
     println("argument: <testArgument>");
 
-    loc projectLocation = |cwd://testProject0|;
-    list[Declaration]  asts = getASTs(projectLocation);
+    // Test java project
+    loc testJavaProject = |cwd://testProject0|;
+    list[Declaration]  javaAST = getASTs(testJavaProject);
+    
+    // Small SQL project
+    loc smallSQL = |project://SQLproject/smallsql0.21_src|;
+    list[Declaration]  smallAST = getASTs(smallSQL);
+
+    // Large SQL prioject 
+    loc largeSQL = |project://SQLbigProject/hsqldb-2.3.1|;
+    list[Declaration]  largeAST = getASTs(largeSQL);
 
     // println(asts);
     
     // println("Complexity: <getComplexity(asts)>");
-    println("Duplicates: <getDuplicatePercentage(asts)>");
+    println("Percentage of duplicates in java: <getDuplicatePercentage(javaAST)>");
+    println("Percentage of duplicates in small: <getDuplicatePercentage(smallAST)>");
+    println("Percentage of duplicates in large: <getDuplicatePercentage(largeAST)>");
     // println("Whitespace <removeWhitespaceAndBlankLines2(asts)> used");
     // getLOC(asts);
 
@@ -61,16 +72,15 @@ int getComplexity(list[Declaration] asts) {
     return dp + 1;
 }
 
-int getDuplicatePercentage(list[Declaration] asts) {
-    // Remove white space and convet ast so each line is a new item in the list
+real getDuplicatePercentage(list[Declaration] asts) {
     list[list[str]] allLines = [];
-    list[str] noSpace = [];
-    int duplicates = 0;
+    real duplicates = 0.0;
     int count = 0;
 
     for (Declaration decl <- asts) {
     // Check if source location is known
-    // decl.src is the path to the java file, is there is multiple files there will be multiple iterations
+    // decl.src is the path to the java file, is there is multiple files there will be multiple iterations\
+    list[str] noSpace = [];
         if (decl.src != |unknown:///|) {
             // Retrieve lines of code from the source location and split by line
             list[str] codeLines = split("\n", readFile(decl.src));
@@ -82,37 +92,51 @@ int getDuplicatePercentage(list[Declaration] asts) {
         count +=1;
     }
 
-    // for (list[str] file <- allLines) {
+    
+    map[str, str] codeGroups = ();
+    real totalLinesCount = 0.0;
+    
+    for (list[str] file <- allLines) {
+        // Find the total number of lines in the project
+        totalLinesCount += size(file);
 
-    // }
-    int index = 0;
-    map[str, str] codeGroups = {};
+        // If file file is smaller than 6 lines ignore it
+        int index = 0;
+        while(index <= size(file) - 6) {
+            // Take 6 lines of code from the file 
+            list[str] linesToAdd = file[index..index + 6];
 
-    while(index < size(allLines) - 6) {
-        list[str] linesToAdd = allLines[index + 6];
-        
+            // Combine to be one string instead of 6 seperate strings
+            str linesToAddStr = "";
+            for (str line <- linesToAdd) {
+                linesToAddStr += line;
+            }
+
+            // Check if code chunck is already in map, if not add, if yes increment duplicates
+            str key = md5Hash(linesToAddStr);
+            if (key in codeGroups) {
+                // Increment duplicates
+                duplicates += 1;
+                // Add to list
+                codeGroups[key] += linesToAddStr;
+                duplicates += 1;
+
+            } else {
+                codeGroups[key] = linesToAddStr;
+            }
+
+            index += 1;
+        }
     }
+    
 
-    println("Count <count>");
-    println(allLines);
-    println(size(allLines));
+    // println("Count <count>");
+    // println(allLines);
+    // println(size(allLines));
+
+    // println(codeGroups);
 
 
-
-    return 0;
+    println("Nuber of duplicates: <duplicates>");
+    return (duplicates/totalLinesCount) * 100;
 }
-
-
-// void getLOC(list[Declaration] asts) {
-//     set[int] unique_lines = {};
-//     visit(asts) {
-//         case Declaration x: {
-//             loc location = x.src;
-//             unique_lines += location.begin.line;
-//             println(location.begin.line);
-//         }
-//     }
-//     println("hi");
-//     println(unique_lines);
-//     return; //size(lines);
-// }
