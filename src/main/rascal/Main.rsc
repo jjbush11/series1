@@ -13,12 +13,11 @@ int main(int testArgument=0) {
     loc projectLocation = |cwd://testProject0|;
     list[Declaration]  asts = getASTs(projectLocation);
 
-    println(asts);
+    // println(asts);
     
     // println("Complexity: <getComplexity(asts)>");
-    // println("Duplicates: <getDuplicatePercentage(asts)>");
+    println("Duplicates: <getDuplicatePercentage(asts)>");
     // println("Whitespace <removeWhitespaceAndBlankLines2(asts)> used");
-    removeWhitespaceAndBlankLines(asts);
     // getLOC(asts);
 
     return testArgument;
@@ -63,75 +62,44 @@ int getComplexity(list[Declaration] asts) {
 }
 
 int getDuplicatePercentage(list[Declaration] asts) {
-    list[Declaration] filteredAst = removeWhitespaceAndBlankLines(asts);
-
-    // Form grouping 
-    set[str] codeGroups = {};
+    // Remove white space and convet ast so each line is a new item in the list
+    list[list[str]] allLines = [];
+    list[str] noSpace = [];
     int duplicates = 0;
+    int count = 0;
 
-    visit(asts) {
-        case Declaration x: {
-            if (x.src != |unknown:///|) {
-                loc location = x.src;
-                // unique_lines += location.begin.line;
-                // println(x.src.begin.line);
-                // println(location.end.line);
-                // int start = location.begin.line;
-                int end = location.end.line;
-                for(int n <- [1 .. end]) {
-                    // lines += |location.file|[line];
-                    println(n);
-                }
-            }
-           
+    for (Declaration decl <- asts) {
+    // Check if source location is known
+    // decl.src is the path to the java file, is there is multiple files there will be multiple iterations
+        if (decl.src != |unknown:///|) {
+            // Retrieve lines of code from the source location and split by line
+            list[str] codeLines = split("\n", readFile(decl.src));
+            // Remove whitespace from each line and add to result
+            // Are these bad for complexity ??
+            noSpace += [replaceAll(line, " ", "") | line <- codeLines];
+            allLines += [[line | line <- noSpace, line != ""]];
         }
+        count +=1;
     }
 
-    // int numLines = 6;
+    // for (list[str] file <- allLines) {
 
-    
+    // }
+    int index = 0;
+    map[str, str] codeGroups = {};
 
-    
+    while(index < size(allLines) - 6) {
+        list[str] linesToAdd = allLines[index + 6];
+        
+    }
+
+    println("Count <count>");
+    println(allLines);
+    println(size(allLines));
+
+
+
     return 0;
-}
-
-list[Declaration] removeWhitespaceAndBlankLines(list[Declaration] asts) {
-    list[Declaration] filteredASTs = [];
-    int count = 0;
-    
-    visit(asts) {
-        case Declaration x: {
-            loc location = x.src;
-            if (location != |unknown:///|) {
-                // Check if the line is not blank or whitespace
-                if (!isBlankOrWhitespace(location)) {
-                    filteredASTs += x;
-                } else {
-                    count += 1;
-                }
-            }
-        }
-    }
-    println("USed count <count>");
-    return filteredASTs;
-}
-
-int removeWhitespaceAndBlankLines2(list[Declaration] asts) {
-    list[Declaration] filteredASTs = [];
-    int count = 0;
-    visit(asts) {
-        case /[\t\n]/: count += 1;
-        // case /[" "]/: count+=1;
-    }
-    
-    return count;
-}
-
-bool isBlankOrWhitespace(loc location) {
-    // Read the content of the location
-    str content = readFile(location);
-    // Check if the content is blank or contains only whitespace
-    return content == "" || content == " " || content == "\t" || content == "\n" || content == "\r\n";
 }
 
 
