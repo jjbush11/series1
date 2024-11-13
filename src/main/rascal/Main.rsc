@@ -77,7 +77,7 @@ real getDuplicatePercentage(list[Declaration] asts) {
 
     for (Declaration decl <- asts) {
     // Check if source location is known
-    // decl.src is the path to the java file, is there is multiple files there will be multiple iterations\
+    // decl.src is the path to the java file, is there is multiple files there will be multiple iterations
     list[str] noSpace = [];
         if (decl.src != |unknown:///|) {
             // Retrieve lines of code from the source location and split by line
@@ -93,52 +93,53 @@ real getDuplicatePercentage(list[Declaration] asts) {
     real totalLinesCount = 0.0;
     
     int fileNum = 0;
+    // This loops through all the files in the project
     while (fileNum < size(allLines)) {
         
-        list[str] file = allLines[fileNum];
+        list[str] currentFile = allLines[fileNum];
 
         // Find the total number of lines in the project
-        totalLinesCount += size(file);
+        totalLinesCount += size(currentFile);
 
-        // If file file is smaller than 6 lines ignore it
+        // If file is smaller than 6 lines ignore it
         // Index is also the line number in the file 
         int index = 0;
-        while(index <= size(file) - 6) {
+        while(index <= size(currentFile) - 6) {
             // Take 6 lines of code from the file 
-            list[str] linesToAdd = file[index..index + 6];
+            list[str] linesToAdd = currentFile[index..index + 6];
 
             // Combine to be one string instead of 6 seperate strings to use for hash key
             str linesToAddStr = "";
             for (str line <- linesToAdd) {
                 linesToAddStr += line;
             }
-
-            // Check if code chunck is already in map, if not add it, if yes increment duplicates
+            
             str key = md5Hash(linesToAddStr);
             int lineNum = index + 1;
             list[str] linesToAddFinal = [];
-            // Giving each line a file ID and line number found to make them unique 
+
+            // Giving each line a file ID and line number to make them unique 
             for (str line <- linesToAdd){
                 linesToAddFinal += "<line> (src: <fileNum>, lineNum: <lineNum>)" + line;
                 lineNum += 1;
             }
+            // Check if code chunck is already in map, if not add it, if yes append to list at the key
             if (key notin codeGroups) {
                 codeGroups[key] = [linesToAddFinal]; //[[ "<line> (src: <fileNum>, lineNum: <index + 1>)" | line <- linesToAdd ]];
 
             } else {
                 codeGroups[key] += [linesToAddFinal]; // [[ "<line> (src: <fileNum>, lineNum: <index + 1>)" | line <- linesToAdd ]];
             }
-
             index += 1;
         }
         fileNum += 1;
     }
 
-    set[str] duplicateLines = {};
-
     // The code group is a duplicate if the list found at codeGroup[key] has more than one item
     map[str, list[list[str]]] duplicateGroups = (key : codeGroups[key] | key <- codeGroups, size(key) > 1);
 
+    set[str] duplicateLines = {};
+    // Extract the individual lines from the duplicate chuncks of code 
     for (str key <- codeGroups) {
         if (size(codeGroups[key]) > 1) {
             for (list[str] lines <- codeGroups[key]) {
