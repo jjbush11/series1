@@ -15,21 +15,19 @@ int main(int testArgument=0) {
     list[Declaration]  javaAST = getASTs(testJavaProject);
     
     // Small SQL project
-    loc smallSQL = |project://SQLproject/smallsql0.21_src|;
-    list[Declaration]  smallAST = getASTs(smallSQL);
+    // loc smallSQL = |project://SQLproject/smallsql0.21_src|;
+    // list[Declaration]  smallAST = getASTs(smallSQL);
 
-    // Large SQL prioject 
-    loc largeSQL = |project://SQLbigProject/hsqldb-2.3.1|;
-    list[Declaration]  largeAST = getASTs(largeSQL);
+    // // Large SQL prioject 
+    // loc largeSQL = |project://SQLbigProject/hsqldb-2.3.1|;
+    // list[Declaration]  largeAST = getASTs(largeSQL);
 
     // println(asts);
     
     // println("Complexity: <getComplexity(asts)>");
     println("Percentage of duplicates in java: <getDuplicatePercentage(javaAST)>");
-    println("Percentage of duplicates in small: <getDuplicatePercentage(smallAST)>");
-    println("Percentage of duplicates in large: <getDuplicatePercentage(largeAST)>");
-    // println("Whitespace <removeWhitespaceAndBlankLines2(asts)> used");
-    // getLOC(asts);
+    // println("Percentage of duplicates in small: <getDuplicatePercentage(smallAST)>");
+    // println("Percentage of duplicates in large: <getDuplicatePercentage(largeAST)>");
 
     return testArgument;
 }
@@ -72,6 +70,12 @@ int getComplexity(list[Declaration] asts) {
     return dp + 1;
 }
 
+list[str] removeInlineComments(list[str] lines) {
+    return visit(lines) {
+        case str line => replaceAll(line, /\s*\/\/.*$/, "")
+    }
+}
+
 real getDuplicatePercentage(list[Declaration] asts) {
     list[list[str]] allLines = [];
 
@@ -79,11 +83,19 @@ real getDuplicatePercentage(list[Declaration] asts) {
     // Check if source location is known
     // decl.src is the path to the java file, is there is multiple files there will be multiple iterations
     list[str] noSpace = [];
+    list[str] noCommentSpace = [];
         if (decl.src != |unknown:///|) {
             // Retrieve lines of code from the source location and split by line
             list[str] codeLines = split("\n", readFile(decl.src));
+            // Remove inline comments
+            codeLines = [replaceAll(line, "\\s*//.*$", "") | line <- codeLines];
+
+            // Remove multiline comments
+            codeLines = [replaceAll(line, "/\\*.*?\\*/", "") | line <- codeLines];
+
             // Remove whitespace from each line and add to result
             noSpace += [replaceAll(line, " ", "") | line <- codeLines];
+            noCommentSpace += [line | line <- noSpace, !contains(line, "//")];
             allLines += [[line | line <- noSpace, line != ""]];
         }
     }
