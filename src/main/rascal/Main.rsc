@@ -6,6 +6,7 @@ import lang::java::m3::AST;
 import List;
 import Set;
 import String;
+import Map;
 
 import List;
 import IO;
@@ -21,6 +22,24 @@ void main(int testArgument=0) {
 //             case  m:\method(Type \return, str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl) : println(getLOC_of_unit(m));
 //      }
 //    }
+
+    return;
+}
+
+void codeAnalysisHandler(loc projectLocation) {
+    list[Declaration] asts = getASTs(projectLocation);
+    int lines_of_code = getLOC(asts);
+    println(lines_of_code);
+
+
+
+    // TESTER FOR PRINTING UNIT SIZES
+    for (unit_size <- get_unit_sizes(asts)) {
+        println(unit_size);
+    }
+
+     list[list[str]] allLines = create_list_from_lines_map(get_useful_lines_per_file(asts));
+
 
     return;
 }
@@ -45,6 +64,47 @@ int getLOC(list[Declaration] asts) {
     return(size(linenrs) - 1);
 }
 
+map[loc, set[int]] get_useful_lines_per_file(list[Declaration] asts) {
+    list[loc] locs = [];
+
+    visit (asts) {
+            case node n: if (n.src ?) locs += n.src;
+    }
+    // this creates a map of files, with for every file the lines which actually have code
+    map[loc, set[int]] lines_map = ();
+    for (myloc <- locs) {
+        int begin_line = myloc.begin.line;
+        int end_line = myloc.end.line;
+        loc key = myloc.top;
+        if (key notin lines_map) {
+            lines_map[key] = {begin_line, end_line};
+        }
+        else {
+            lines_map[myloc.top] = lines_map[myloc.top] + begin_line + end_line;
+        }
+
+    }
+    return lines_map;
+}
+
+ list[list[str]] create_list_from_lines_map(map[loc, set[int]] lines_map) {
+    list[list[str]] allLines = [];
+    // 1. loop over map to get all get all files
+    println(lines_map);
+    set[loc] files = { k | <k,_> <- toRel(lines_map) };
+    for (file <- files) {
+        list[str] codeLines = split("\n", readFile(file));
+       // sort(lines_map(file));
+
+        list[str] actual_code_lines = [codeLines[lineNr-1] | lineNr <- sort(lines_map[file])];
+        //println(sort(lines_map[file]));
+        println("actual lines of code" + actual_code_lines);
+        allLines += codeLines;
+    }
+   return allLines;
+
+}
+
 int getLOC_of_unit(Declaration decl) {
     list[loc] locs = [];
     visit (decl) {
@@ -54,36 +114,15 @@ int getLOC_of_unit(Declaration decl) {
     return(size(linenrs));
 }
 
-// list[tuple[loc, int]] getLOC_per_units(list[Declaration] asts) {
-//     list[tuple[loc, int]] units = [];
-//     for (ast <- asts) {
-//         visit (ast) {
-//             case  m:\method(_,_,_,_) : println(getLOC_of_unit(m));
-//         }
-//     }
-
-//     return units;
-// }
-
-
-
-void codeAnalysisHandler(loc projectLocation) {
-    list[Declaration] asts = getASTs(projectLocation);
-    int lines_of_code = getLOC(asts);
-  //  list[tuple[loc, int]] units = getLOC_per_units(asts); // get lists per unit, store loc as well so that can be traced back which functions are big
-
-    //list[tuple[loc, int]] units = [];
+ list[int] get_unit_sizes(list[Declaration] asts) {
+    list[int] unit_sizes = [];
    for (ast <- asts) {
        visit (ast) {
-             case  m:\method(Type \return, str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl) : println(getLOC_of_unit(m));
+             case  m:\method(Type \return, str name, list[Declaration] parameters, list[Expression] exceptions, Statement impl) : unit_sizes += getLOC_of_unit(m);
       }
     }
-
-
-    return;
+    return unit_sizes;
 }
-
-
 
 // METRIC CALCULATORS
 str calculateVolumeMetric(int amountOfLines) {
