@@ -26,6 +26,13 @@ int main(int testArgument=0) {
     int complex = calculateComplexityMetric(smallAST);
     int unitSize = calculateUnitSizeMetric(smallAST);
     int duplicate = calculateDuplicateMetric(smallAST);
+
+    int analysability = calculateAnalysability(volume, duplicate, unitSize);
+    int change = calculateChangeability(complex, duplicate);
+    int test = calculateTestability(complex, unitSize);
+
+    println("Changeability " + toString(calculateChangeability(complex, duplicate)));
+    println("Testability " + toString(calculateTestability(complex, unitSize)));
     println("Maintainability metrics:");
     println("Volume: " + toString(volume));
     println("Complexity per unit: " + toString(complex));
@@ -33,9 +40,9 @@ int main(int testArgument=0) {
     println("Duplicate: " + toString(duplicate));
     println("*****************************************************");
     println("Maintainability scores: ");
-    println("Analysability: " + toString(calculateAnalysability(volume, duplicate, unitSize)));
-    println("Changeability " + toString(calculateChangeability(complex, duplicate)));
-    println("Testability " + toString(calculateTestability(complex, unitSize)));
+    println("Analysability: " + toString(analysability));
+    println("Changeability " + toString(change));
+    println("Testability " + toString(calculateTestability));
 
     return testArgument;
 }
@@ -480,6 +487,11 @@ int calculateChangeability(int complexity, int duplication) {
 // TESTABILITY 
 int calculateTestability(int complexity, int unitSize) {
     return (complexity + unitSize)/2;
+}
+
+// MAINTAINABILITY 
+int calculateMaintainability(int analyse, int change, int test) {
+    return (analyse, change, test)/3;
 }
 
 
