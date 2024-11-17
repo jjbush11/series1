@@ -28,6 +28,9 @@ void main(int testArgument=0) {
 
 void codeAnalysisHandler(loc projectLocation) {
     list[Declaration] asts = getASTs(projectLocation);
+    println(asts);
+
+
     int lines_of_code = getLOC(asts);
     println(lines_of_code);
 

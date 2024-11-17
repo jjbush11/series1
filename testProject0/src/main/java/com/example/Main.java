@@ -2,27 +2,13 @@ package com.example;
 
 public class Main {
     public static void main(String[] args) {
-    //     System.out.println("Hello world!");
+        System.out.println("Hello World");
 
-     int x = 10;
+        // I do not exist
 
-  //  System/*agafag*/.out.println(x);
-    //    Sy
-    //    // im a comment
+        // Neither do I, or the lines below and above me!
 
-    System.out.println("//im not a comment");
     }
-
-    public static void test() {
-        int x = 10;
-    }
-
-    // public static void test2() {
-    //     int x = 10;
-    //     //and a print
-    //     int y = x+1;
-    // }
-
 }
 
 
