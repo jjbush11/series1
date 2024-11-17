@@ -91,16 +91,18 @@ map[loc, set[int]] get_useful_lines_per_file(list[Declaration] asts) {
     list[list[str]] allLines = [];
     // 1. loop over map to get all get all files
     println(lines_map);
-    set[loc] files = { k | <k,_> <- toRel(lines_map) };
+    set[loc] files = { k | <k,_> <- toList(lines_map) };
     for (file <- files) {
         list[str] codeLines = split("\n", readFile(file));
        // sort(lines_map(file));
 
         list[str] actual_code_lines = [codeLines[lineNr-1] | lineNr <- sort(lines_map[file])];
         //println(sort(lines_map[file]));
-        println("actual lines of code" + actual_code_lines);
-        allLines += codeLines;
+        println(actual_code_lines);
+        allLines = allLines + [actual_code_lines];
     }
+
+    println(allLines);
    return allLines;
 
 }

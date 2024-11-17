@@ -6,7 +6,7 @@ public class Main {
 
      int x = 10;
 
-    System/*agafag*/.out.println(x);
+  //  System/*agafag*/.out.println(x);
     //    Sy
     //    // im a comment
 
