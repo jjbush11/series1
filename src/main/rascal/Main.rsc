@@ -13,28 +13,29 @@ int main(int testArgument=0) {
     // Test java project
     loc testJavaProject = |cwd://testProject0|;
     list[Declaration]  javaAST = getASTs(testJavaProject);
-
-    // println(getCleanedCode(javaAST));
-    // println("lines of code: <getTotalLinesOfCode(javaAST)>");
-    // println("UNits : <getAllUnits(javaAST)>");
     
     // Small SQL project
-    // loc smallSQL = |project://SQLproject/smallsql0.21_src|;
-    // list[Declaration]  smallAST = getASTs(smallSQL);
+    loc smallSQL = |project://SQLproject/smallsql0.21_src|;
+    list[Declaration]  smallAST = getASTs(smallSQL);
 
-    // // Large SQL prioject 
+    // Large SQL prioject 
     // loc largeSQL = |project://SQLbigProject/hsqldb-2.3.1|;
     // list[Declaration]  largeAST = getASTs(largeSQL);
-
-    // println(asts);
     
-    // getComplexity(javaAST);
-    // println(calculateComplexityMetric(javaAST));
-    calculateUnitSizeMetric(javaAST);
-    println(calculateUnitSizeMetric(javaAST));
-    // println("Percentage of duplicates in java: <getDuplicatePercentage(javaAST)>");
-    // println("Percentage of duplicates in small: <getDuplicatePercentage(smallAST)>");
-    // println("Percentage of duplicates in large: <getDuplicatePercentage(largeAST)>");
+    int volume = calculateVolumeMetric(smallAST);
+    int complex = calculateComplexityMetric(smallAST);
+    int unitSize = calculateUnitSizeMetric(smallAST);
+    int duplicate = calculateDuplicateMetric(smallAST);
+    println("Maintainability metrics:");
+    println("Volume: " + toString(volume));
+    println("Complexity per unit: " + toString(complex));
+    println("Unit size: " + toString(unitSize));
+    println("Duplicate: " + toString(duplicate));
+    println("*****************************************************");
+    println("Maintainability scores: ");
+    println("Analysability: " + toString(calculateAnalysability(volume, duplicate, unitSize)));
+    println("Changeability " + toString(calculateChangeability(complex, duplicate)));
+    println("Testability " + toString(calculateTestability(complex, unitSize)));
 
     return testArgument;
 }
@@ -70,14 +71,7 @@ list[list[str]] getCleanedCode(list[Declaration] asts) {
     list[list[str]] allLinesNoSpaceComment = [[]];
     for (lines <- allLinesNoSpace) {
         allLinesNoSpaceComment += [[k | k <- lines, !startsWith(k, "//")]];
-    }
-    // list[list[str]] allLinesNoSpaceComment = [[replaceAll(k, " ", "") | k <- lines, !startsWith(k, "//")] | lines <- allLines];
-    // allLinesNoSpaceComment = [lines | lines <- allLinesNoSpaceComment, size(lines) > 0];
-    // for (lines <- allLines) {
-    //     allLinesNoSpace += [[replaceAll(k, " ", "") | k <- lines, !startsWith(k, "//")]];
-    // }
-
-    // allLinesNoSpace = [k | k <- allLinesNoSpace, size(k) > 0];  
+    } 
 
     return allLinesNoSpaceComment;
 }
@@ -170,42 +164,18 @@ map[str, real] getComplexity(list[Declaration] asts) {
 }
 
 real getDuplicatePercentage(list[Declaration] asts) {
-    list[list[str]] allLines = [];
-
-    for (Declaration decl <- asts) {
-    // Check if source location is known
-    // decl.src is the path to the java file, is there is multiple files there will be multiple iterations
-    list[str] noSpace = [];
-    list[str] noCommentSpace = [];
-        if (decl.src != |unknown:///|) {
-            // Retrieve lines of code from the source location and split by line
-            list[str] codeLines = split("\n", readFile(decl.src));
-            // Remove inline comments
-            // codeLines = [replaceAll(line, "\\s*//.*$", "") | line <- codeLines];
-
-            // Remove multiline comments
-            codeLines = [replaceAll(line, "/\\*.*?\\*/", "") | line <- codeLines];
-
-            // Remove whitespace from each line and add to result
-            noSpace += [replaceAll(line, " ", "") | line <- codeLines];
-            // Remove lines with that start with //
-            noCommentSpace += [line | line <- noSpace, !contains(line, "//")];
-            allLines += [[line | line <- noSpace, line != ""]];
-        }
-    }
+    list[list[str]] allLinesClean = getCleanedCode(asts);
 
     // Declare map that will record all code chunks in the project
     map[str, list[list[str]]] codeGroups = ();
-    real totalLinesCount = 0.0;
+    // Get total lines of clean code in the project
+    real totalLinesCount = 0.0 + getTotalLinesOfCode(asts);
     
     int fileNum = 0;
     // This loops through all the files in the project
-    while (fileNum < size(allLines)) {
+    while (fileNum < size(allLinesClean)) {
         
-        list[str] currentFile = allLines[fileNum];
-
-        // Find the total number of lines in the project
-        totalLinesCount += size(currentFile);
+        list[str] currentFile = allLinesClean[fileNum];
 
         // If file is smaller than 6 lines ignore it
         // Index is also the line number in the file 
@@ -316,16 +286,12 @@ map[loc, set[int]] get_useful_lines_per_file(list[Declaration] asts) {
  list[list[str]] create_list_from_lines_map(map[loc, set[int]] lines_map) {
     list[list[str]] allLines = [];
     // 1. loop over map to get all get all files
-    // println(lines_map);
-    // set[loc] files = {};//{ k | <loc k, _> <- toList(lines_map) };
     set[loc] files = { k | k <- lines_map };
     for (file <- files) {
         list[str] codeLines = split("\n", readFile(file));
        // sort(lines_map(file));
 
         list[str] actual_code_lines = [codeLines[lineNr-1] | lineNr <- sort(lines_map[file])];
-        //println(sort(lines_map[file]));
-        // println(actual_code_lines);
         allLines = allLines + [actual_code_lines];
     }
 
@@ -478,6 +444,42 @@ int calculateComplexityMetric(list[Declaration] asts) {
     } else {
         return 1;
     }
+}
+
+// DUPLICATE
+int calculateDuplicateMetric(list[Declaration] asts) {
+    real duplicatePercent  = getDuplicatePercentage(asts);
+
+    if (duplicatePercent >= 0 && duplicatePercent <= 3) {
+        return 5;
+    } else if (duplicatePercent > 3 && duplicatePercent <= 5) {
+        return 4;
+    } else if (duplicatePercent > 5 && duplicatePercent <= 10) {
+        return 3;
+    } else if (duplicatePercent > 10 && duplicatePercent <= 20) {
+        return 2;
+    } else {
+        return 1;
+    }
+}
+
+/*
+* MAINTABILITY
+*/
+
+// ANALYSABILITY 
+int calculateAnalysability(int volume, int duplication, int unitSize) {
+    return (volume + duplication + unitSize)/3;
+}
+
+// CHANGEABILITY  
+int calculateChangeability(int complexity, int duplication) {
+    return (complexity + duplication)/2;
+}
+
+// TESTABILITY 
+int calculateTestability(int complexity, int unitSize) {
+    return (complexity + unitSize)/2;
 }
 
 
