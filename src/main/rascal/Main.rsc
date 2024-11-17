@@ -11,38 +11,38 @@ int main(int testArgument=0) {
     println("argument: <testArgument>");
 
     // Test java project
-    loc testJavaProject = |cwd://testProject0|;
-    list[Declaration]  javaAST = getASTs(testJavaProject);
+    // loc testJavaProject = |cwd://testProject0|;
+    // list[Declaration]  javaAST = getASTs(testJavaProject);
     
-    // Small SQL project
-    loc smallSQL = |project://SQLproject/smallsql0.21_src|;
-    list[Declaration]  smallAST = getASTs(smallSQL);
+    // // Small SQL project
+    // loc smallSQL = |project://SQLproject/smallsql0.21_src|;
+    // list[Declaration]  smallAST = getASTs(smallSQL);
 
-    // Large SQL prioject 
-    // loc largeSQL = |project://SQLbigProject/hsqldb-2.3.1|;
-    // list[Declaration]  largeAST = getASTs(largeSQL);
+    // // Large SQL prioject 
+    // // loc largeSQL = |project://SQLbigProject/hsqldb-2.3.1|;
+    // // list[Declaration]  largeAST = getASTs(largeSQL);
     
-    int volume = calculateVolumeMetric(smallAST);
-    int complex = calculateComplexityMetric(smallAST);
-    int unitSize = calculateUnitSizeMetric(smallAST);
-    int duplicate = calculateDuplicateMetric(smallAST);
+    // int volume = calculateVolumeMetric(smallAST);
+    // int complex = calculateComplexityMetric(smallAST);
+    // int unitSize = calculateUnitSizeMetric(smallAST);
+    // int duplicate = calculateDuplicateMetric(smallAST);
 
-    int analysability = calculateAnalysability(volume, duplicate, unitSize);
-    int change = calculateChangeability(complex, duplicate);
-    int test = calculateTestability(complex, unitSize);
+    // int analysability = calculateAnalysability(volume, duplicate, unitSize);
+    // int change = calculateChangeability(complex, duplicate);
+    // int test = calculateTestability(complex, unitSize);
 
-    println("Changeability " + toString(calculateChangeability(complex, duplicate)));
-    println("Testability " + toString(calculateTestability(complex, unitSize)));
-    println("Maintainability metrics:");
-    println("Volume: " + toString(volume));
-    println("Complexity per unit: " + toString(complex));
-    println("Unit size: " + toString(unitSize));
-    println("Duplicate: " + toString(duplicate));
-    println("*****************************************************");
-    println("Maintainability scores: ");
-    println("Analysability: " + toString(analysability));
-    println("Changeability " + toString(change));
-    println("Testability " + toString(calculateTestability));
+    // println("Changeability " + toString(calculateChangeability(complex, duplicate)));
+    // println("Testability " + toString(calculateTestability(complex, unitSize)));
+    // println("Maintainability metrics:");
+    // println("Volume: " + toString(volume));
+    // println("Complexity per unit: " + toString(complex));
+    // println("Unit size: " + toString(unitSize));
+    // println("Duplicate: " + toString(duplicate));
+    // println("*****************************************************");
+    // println("Maintainability scores: ");
+    // println("Analysability: " + toString(analysability));
+    // println("Changeability " + toString(change));
+    // println("Testability " + toString(calculateTestability));
 
     return testArgument;
 }
@@ -490,9 +490,9 @@ int calculateTestability(int complexity, int unitSize) {
 }
 
 // MAINTAINABILITY 
-int calculateMaintainability(int analyse, int change, int test) {
-    return (analyse, change, test)/3;
-}
+// int calculateMaintainability(int analyse, int change, int test) {
+//     return (analyse, change, test)/3;
+// }
 
 
 
